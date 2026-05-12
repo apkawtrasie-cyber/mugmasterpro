@@ -51,10 +51,10 @@ export default function HomePage() {
     setSavedArtworks(getArtworks());
   }, []);
 
-  const handleExport = async () => {
+  const handleExport = async (filename: string) => {
     setExporting(true);
     try {
-      await export4K();
+      await export4K(filename);
     } finally {
       setExporting(false);
     }

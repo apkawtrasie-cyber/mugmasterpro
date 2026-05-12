@@ -459,7 +459,7 @@ export function useMugRenderer(
   }, [applyParams]);
 
   // ---------------- Export 4K PNG ----------------
-  const export4K = useCallback(async () => {
+  const export4K = useCallback(async (filename?: string) => {
     const r = refs.current;
     if (!r) return;
     const { pixi: PIXI, app, root, gridSprite } = r;
@@ -492,7 +492,8 @@ export function useMugRenderer(
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `mugmaster-${Date.now()}-4k.png`;
+    const safe = (filename ?? "").trim().replace(/[\\/:*?"<>|]+/g, "_").replace(/\.png$/i, "");
+    a.download = safe ? `${safe}.png` : `mugmaster-${Date.now()}-4k.png`;
     document.body.appendChild(a);
     a.click();
     a.remove();

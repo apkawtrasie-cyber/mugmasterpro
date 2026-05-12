@@ -11,7 +11,7 @@ import { DEFAULT_PARAMS } from "@/hooks/useMugRenderer";
 
 type Props = {
   onChange: (patch: Partial<MugParams>) => void;
-  onExport: () => void;
+  onExport: (filename: string) => void;
   exporting: boolean;
   hasArtwork: boolean;
   /** Optional: when supplied, resets sliders to these values (e.g. on project load). */
@@ -50,6 +50,7 @@ function SliderRow({ label, value, min, max, step, display, onChange }: SliderRo
 
 export function ControlsPanel({ onChange, onExport, exporting, hasArtwork, externalParams }: Props) {
   const [p, setP] = useState<MugParams>({ ...DEFAULT_PARAMS });
+  const [filename, setFilename] = useState<string>("mugmaster-mockup");
 
   useEffect(() => {
     if (externalParams) setP(externalParams);
@@ -250,9 +251,27 @@ export function ControlsPanel({ onChange, onExport, exporting, hasArtwork, exter
       </Section>
 
       <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
-        <Button onClick={onExport} disabled={!hasArtwork || exporting} className="w-full">
+        <div className="space-y-1.5">
+          <Label htmlFor="filename-input">Nazwa pliku</Label>
+          <div className="flex items-center gap-2 rounded-md border border-border bg-card/40 px-3 py-2 focus-within:border-foreground/40">
+            <input
+              id="filename-input"
+              type="text"
+              value={filename}
+              onChange={(e) => setFilename(e.target.value)}
+              placeholder="mugmaster-mockup"
+              className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+            />
+            <span className="font-mono text-xs text-muted-foreground">.png</span>
+          </div>
+        </div>
+        <Button
+          onClick={() => onExport(filename)}
+          disabled={!hasArtwork || exporting}
+          className="w-full"
+        >
           <Download className="h-4 w-4" />
-          {exporting ? "Rendering 4K…" : "Generate 4K PNG"}
+          {exporting ? "Rendering 4K…" : "Generate 4K PNG (transparent)"}
         </Button>
         <Button variant="outline" onClick={reset} className="w-full">
           <RotateCcw className="h-4 w-4" />
