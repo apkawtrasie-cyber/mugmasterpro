@@ -487,16 +487,40 @@ export function useMugRenderer(
     transform.scale(TARGET / SCENE_W, TARGET / SCENE_H);
 
     app.renderer.render(root, { renderTexture: rt, transform, clear: true });
-    const canvas = app.renderer.extract.canvas(rt) as HTMLCanvasElement;
+
+    // Read raw framebuffer pixels (premultiplied RGBA) and UNPREMULTIPLY the
+    // colour channels so the PNG stores straight alpha. Without this step,
+    // viewers that don't honour premultiplied PNG alpha composite the image
+    // onto a coloured background, making the export look like it has a bg.
+    const raw = app.renderer.extract.pixels(rt) as Uint8Array;
+    const out = new Uint8ClampedArray(raw.length);
+    for (let i = 0; i < raw.length; i += 4) {
+      const a = raw[i + 3];
+      if (a === 0) {
+        out[i] = 0; out[i + 1] = 0; out[i + 2] = 0; out[i + 3] = 0;
+      } else if (a === 255) {
+        out[i]     = raw[i];
+        out[i + 1] = raw[i + 1];
+        out[i + 2] = raw[i + 2];
+        out[i + 3] = 255;
+      } else {
+        const inv = 255 / a;
+        out[i]     = raw[i]     * inv;
+        out[i + 1] = raw[i + 1] * inv;
+        out[i + 2] = raw[i + 2] * inv;
+        out[i + 3] = a;
+      }
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width  = TARGET;
+    canvas.height = TARGET;
+    const ctx = canvas.getContext("2d")!;
+    ctx.putImageData(new ImageData(out, TARGET, TARGET), 0, 0);
 
     gridSprite.alpha = gridAlpha;
 
     const blob: Blob | null = await new Promise((resolve) => {
-      if ((canvas as HTMLCanvasElement).toBlob) {
-        (canvas as HTMLCanvasElement).toBlob((b) => resolve(b), "image/png");
-      } else {
-        resolve(null);
-      }
+      canvas.toBlob((b) => resolve(b), "image/png");
     });
 
     rt.destroy(true);
