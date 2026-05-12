@@ -208,20 +208,24 @@ export function useMugRenderer(
 
       // 4a) Shadows overlay — MULTIPLY blend darkens the artwork where the
       //     mug surface would naturally be shaded (left side, top rim, bottom).
+      //     The mug photo already has baked-in lighting, so these overlays are
+      //     hidden until the user loads artwork (toggled in applyParams).
       const overlaySprite = new PIXI.Sprite(overlayTex);
       overlaySprite.width = SCENE_W;
       overlaySprite.height = SCENE_H;
       overlaySprite.blendMode = PIXI.BLEND_MODES.MULTIPLY;
-      overlaySprite.alpha = 0.55;
+      overlaySprite.alpha = 0;
+      overlaySprite.visible = false;
       root.addChild(overlaySprite);
 
       // 4b) Highlights overlay — SCREEN blend adds white specular reflections.
-      //     Kept very subtle so the artwork doesn't look like it has a halo.
+      //     Kept very subtle and only shown when artwork is present.
       const highlightSprite = new PIXI.Sprite(highlightTex);
       highlightSprite.width = SCENE_W;
       highlightSprite.height = SCENE_H;
       highlightSprite.blendMode = PIXI.BLEND_MODES.SCREEN;
-      highlightSprite.alpha = 0.18;
+      highlightSprite.alpha = 0;
+      highlightSprite.visible = false;
       root.addChild(highlightSprite);
 
       // 5) Edge fade mask — horizontal alpha gradient applied to the mesh so
@@ -354,6 +358,7 @@ export function useMugRenderer(
       pixi: PIXI,
       artworkMesh, artworkAspect, artworkContainer,
       maskSprite, gridSprite, colorFilter,
+      overlaySprite, highlightSprite,
       edgeFadeMask, edgeFadeCache,
     } = r;
 
@@ -411,6 +416,14 @@ export function useMugRenderer(
     if (hasArtwork) {
       artworkMesh.alpha = (p.artworkOpacity ?? 100) / 100;
     }
+
+    // Shadow / highlight overlays only kick in once an artwork is loaded so the
+    // bare ceramic photo stays clean. Intensities are tied to artwork opacity.
+    const opacity01 = (p.artworkOpacity ?? 100) / 100;
+    overlaySprite.visible   = hasArtwork && opacity01 > 0.01;
+    highlightSprite.visible = hasArtwork && opacity01 > 0.01;
+    overlaySprite.alpha   = hasArtwork ? 0.30 * opacity01 : 0;
+    highlightSprite.alpha = hasArtwork ? 0.10 * opacity01 : 0;
 
     // Colour adjustments: brightness / contrast / saturation
     const brightness = (p.artworkBrightness ?? 100) / 100; // 1 = neutral
