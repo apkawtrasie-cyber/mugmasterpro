@@ -13,7 +13,8 @@ export type MugTemplate = {
 export type SavedArtwork = {
   id: string;
   name: string;
-  /** Resized JPEG data URL (max ~1024 px wide) for compact localStorage. */
+  /** Resized data URL (max ~1024 px wide). PNG when source has alpha,
+   *  JPEG otherwise — keeps localStorage compact while preserving transparency. */
   dataUrl: string;
   createdAt: number;
 };

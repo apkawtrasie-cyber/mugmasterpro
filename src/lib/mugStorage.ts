@@ -102,7 +102,11 @@ export function deleteCustomTemplate(id: string): void {
 
 /**
  * Resize an HTMLImageElement to at most `maxPx` on its longest side and return
- * a JPEG data URL at the given quality.  Used for storing artwork efficiently.
+ * a data URL.
+ *
+ *   • If the source has any transparent pixel (PNG / SVG / WebP-alpha) → PNG
+ *     so the alpha channel is preserved when the user re-loads from the library.
+ *   • Otherwise → JPEG (smaller payload in localStorage).
  */
 export function resizeToDataUrl(
   img: HTMLImageElement,
@@ -115,8 +119,23 @@ export function resizeToDataUrl(
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
-  c.getContext("2d")!.drawImage(img, 0, 0, w, h);
-  return c.toDataURL("image/jpeg", quality);
+  const ctx = c.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, w, h);
+
+  // Detect transparency in a sparse sample (cheap — every Nth pixel).
+  let hasAlpha = false;
+  try {
+    const { data } = ctx.getImageData(0, 0, w, h);
+    const step = Math.max(4, Math.floor(data.length / 4 / 4096)) * 4; // ~4k samples
+    for (let i = 3; i < data.length; i += step) {
+      if (data[i] < 255) { hasAlpha = true; break; }
+    }
+  } catch {
+    // Cross-origin/tainted canvas — assume alpha to be safe.
+    hasAlpha = true;
+  }
+
+  return hasAlpha ? c.toDataURL("image/png") : c.toDataURL("image/jpeg", quality);
 }
 
 /**

@@ -63,6 +63,18 @@ export default function HomePage() {
   const handleArtworkFile = useCallback(
     async (file: File) => {
       await loadArtwork(file);
+
+      // Reset adjustment sliders to neutral defaults so settings from a
+      // previously-loaded artwork don't bleed into the new one.
+      const adjustmentReset: Partial<MugParams> = {
+        artworkOpacity:    DEFAULT_PARAMS.artworkOpacity,
+        artworkBrightness: DEFAULT_PARAMS.artworkBrightness,
+        artworkContrast:   DEFAULT_PARAMS.artworkContrast,
+        artworkSaturation: DEFAULT_PARAMS.artworkSaturation,
+      };
+      setCurrentParams((prev) => ({ ...prev, ...adjustmentReset }));
+      setParams(adjustmentReset);
+
       // Downscale and persist to the artwork library + remember for project saving.
       const img = new Image();
       img.src = URL.createObjectURL(file);
@@ -80,7 +92,7 @@ export default function HomePage() {
         setSavedArtworks(getArtworks());
       };
     },
-    [loadArtwork]
+    [loadArtwork, setParams]
   );
 
   const handleLoadSavedArtwork = useCallback(
