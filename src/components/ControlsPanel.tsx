@@ -68,7 +68,7 @@ export function ControlsPanel({ onChange, onExport, exporting, hasArtwork, exter
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-5 overflow-y-auto p-4">
+    <div className="flex h-auto w-full flex-col gap-5 p-4 md:h-full md:overflow-y-auto">
       <Section title="Position">
         <SliderRow
           label="X"

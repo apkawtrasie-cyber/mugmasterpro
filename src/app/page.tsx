@@ -169,9 +169,9 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen w-full flex-col bg-background text-foreground md:h-screen md:min-h-0">
       {/* Top bar */}
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-card/40 px-4">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-card/40 px-3 md:px-4">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/15 text-primary">
             <Coffee className="h-4 w-4" />
@@ -189,14 +189,14 @@ export default function HomePage() {
               ready ? "bg-emerald-400" : "bg-amber-400"
             }`}
           />
-          {ready ? "Renderer gotowy" : "Ładowanie…"}
+          <span className="hidden sm:inline">{ready ? "Renderer gotowy" : "Ładowanie…"}</span>
         </div>
       </header>
 
-      {/* Workspace */}
-      <main className="flex flex-1 overflow-hidden">
-        {/* Left sidebar */}
-        <aside className="hidden w-72 shrink-0 flex-col border-r border-border bg-card/30 md:flex">
+      {/* Workspace — stacks vertically on mobile, horizontal on md+ */}
+      <main className="flex flex-1 flex-col md:flex-row md:overflow-hidden">
+        {/* Left sidebar — becomes a full-width panel above canvas on mobile */}
+        <aside className="order-2 flex w-full shrink-0 flex-col border-t border-border bg-card/30 md:order-1 md:h-full md:w-72 md:border-r md:border-t-0">
           {/* Tab bar */}
           <div className="flex shrink-0 border-b border-border">
             {TABS.map((t) => (
@@ -217,7 +217,7 @@ export default function HomePage() {
           </div>
 
           {/* Tab content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="md:flex-1 md:overflow-y-auto">
             {tab === "artwork" && (
               <div className="flex flex-col gap-4 p-4">
                 <p className="text-xs text-muted-foreground">
@@ -251,8 +251,8 @@ export default function HomePage() {
           </div>
         </aside>
 
-        {/* Center: viewport */}
-        <section className="flex flex-1 overflow-hidden">
+        {/* Center: viewport — appears first on mobile, middle column on desktop */}
+        <section className="order-1 flex h-[55vh] shrink-0 md:order-2 md:h-auto md:flex-1 md:overflow-hidden">
           <MugCanvas
             ref={canvasRef}
             ready={ready}
@@ -261,8 +261,8 @@ export default function HomePage() {
           />
         </section>
 
-        {/* Right: parameter panel */}
-        <aside className="hidden w-80 shrink-0 border-l border-border bg-card/30 lg:block">
+        {/* Right: parameter panel — full-width bottom on mobile, right column on desktop */}
+        <aside className="order-3 w-full shrink-0 border-t border-border bg-card/30 md:h-full md:w-80 md:border-l md:border-t-0">
           <ControlsPanel
             onChange={handleParamsChange}
             onExport={handleExport}

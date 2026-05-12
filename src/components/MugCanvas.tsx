@@ -51,7 +51,7 @@ export const MugCanvas = forwardRef<HTMLDivElement, Props>(function MugCanvas(
   ref
 ) {
   return (
-    <div className="relative flex h-full w-full items-center justify-center p-6">
+    <div className="relative flex h-full w-full items-center justify-center p-2 md:p-6">
       {/* Subtle grid backdrop */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
